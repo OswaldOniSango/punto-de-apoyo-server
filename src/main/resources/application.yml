@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: punto-de-apoyo
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/punto_de_apoyo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:punto}
+    password: ${SPRING_DATASOURCE_PASSWORD:punto}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  security:
+    jwt:
+      issuer: ${JWT_ISSUER:punto-de-apoyo}
+      secret: ${JWT_SECRET:change-this-local-development-secret-32b}
+      expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
