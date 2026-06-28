@@ -2,9 +2,9 @@ spring:
   application:
     name: punto-de-apoyo
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/punto_de_apoyo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-    username: ${SPRING_DATASOURCE_USERNAME:punto}
-    password: ${SPRING_DATASOURCE_PASSWORD:punto}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   flyway:
     enabled: true
@@ -26,5 +26,5 @@ app:
   security:
     jwt:
       issuer: ${JWT_ISSUER:punto-de-apoyo}
-      secret: ${JWT_SECRET:change-this-local-development-secret-32b}
+      secret: ${JWT_SECRET}
       expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
