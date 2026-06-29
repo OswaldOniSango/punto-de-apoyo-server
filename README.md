@@ -134,3 +134,33 @@ Los errores de validacion devuelven `400` con detalle por campo:
   ]
 }
 ```
+
+## Registro publico de viviendas afectadas
+
+No requiere login ni JWT.
+
+```bash
+curl -X POST http://localhost:8080/api/public/inspection-cases \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "applicantName": "Maria Perez",
+    "applicantPhone": "+58 412 555-1212",
+    "address": "Av. Principal, Casa 12",
+    "city": "Caracas",
+    "stateRegion": "Distrito Capital",
+    "description": "Grietas visibles en paredes y filtracion de agua en techo",
+    "latitude": 10.5001234,
+    "longitude": -66.9012345,
+    "priority": "HIGH"
+  }'
+```
+
+Respuesta esperada:
+
+```json
+{
+  "id": 1,
+  "trackingCode": "VZ-2026-00000001",
+  "status": "PENDIENTE"
+}
+```
