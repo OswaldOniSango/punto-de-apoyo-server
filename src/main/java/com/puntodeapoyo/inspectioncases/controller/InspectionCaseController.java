@@ -7,12 +7,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.puntodeapoyo.inspectioncases.dto.AssignEngineersRequest;
-import com.puntodeapoyo.inspectioncases.dto.CreateInspectionCaseRequest;
-import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
-import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
-import com.puntodeapoyo.inspectioncases.dto.PhotoEvidenceResponse;
-import com.puntodeapoyo.inspectioncases.dto.UpdateInspectionCaseStatusRequest;
+import com.puntodeapoyo.inspectioncases.dto.*;
 import com.puntodeapoyo.inspectioncases.model.InspectionCasePriority;
 import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
 import com.puntodeapoyo.inspectioncases.service.InspectionCaseService;
@@ -136,6 +131,50 @@ public class InspectionCaseController {
         );
     }
 
+    @PostMapping(
+            value = "/api/inspection-cases/{id}/technical-observations",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TechnicalObservationResponse createTechnicalObservation(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateTechnicalObservationRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return inspectionCaseService.createTechnicalObservation(
+                id,
+                jwt.getClaim("user_id"),
+                jwt.getClaimAsString("role"),
+                request,
+                List.of()
+        );
+    }
+
+    @PostMapping(
+            value = "/api/inspection-cases/{id}/technical-observations",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TechnicalObservationResponse createTechnicalObservationWithPhotos(
+            @PathVariable Long id,
+            @RequestPart("observation") String observationPayload,
+            @RequestPart(value = "photos", required = false) List<MultipartFile> photos,
+            @RequestPart(value = "photo", required = false) List<MultipartFile> photo,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        CreateTechnicalObservationRequest request = parseObservationPayload(observationPayload);
+        validateTechnicalObservationRequest(request);
+        return inspectionCaseService.createTechnicalObservation(
+                id,
+                jwt.getClaim("user_id"),
+                jwt.getClaimAsString("role"),
+                request,
+                mergePhotos(photos, photo)
+        );
+    }
+
     @GetMapping("/api/inspection-cases")
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR', 'ENGINEER')")
     public List<InspectionCaseResponse> search(
@@ -168,6 +207,25 @@ public class InspectionCaseController {
 
     private void validateCaseRequest(CreateInspectionCaseRequest request) {
         Set<ConstraintViolation<CreateInspectionCaseRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+    }
+
+    private CreateTechnicalObservationRequest parseObservationPayload(String observationPayload) {
+        try {
+            return objectMapper.readValue(observationPayload, CreateTechnicalObservationRequest.class);
+        } catch (JsonProcessingException exception) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El campo observation debe ser un JSON valido",
+                    exception
+            );
+        }
+    }
+
+    private void validateTechnicalObservationRequest(CreateTechnicalObservationRequest request) {
+        Set<ConstraintViolation<CreateTechnicalObservationRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }

@@ -12,18 +12,23 @@ import java.util.Set;
 import com.puntodeapoyo.common.PhoneNormalizer;
 import com.puntodeapoyo.inspectioncases.dto.CaseAssignmentResponse;
 import com.puntodeapoyo.inspectioncases.dto.CreateInspectionCaseRequest;
+import com.puntodeapoyo.inspectioncases.dto.CreateTechnicalObservationRequest;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
 import com.puntodeapoyo.inspectioncases.dto.PhotoEvidenceResponse;
+import com.puntodeapoyo.inspectioncases.dto.TechnicalObservationResponse;
 import com.puntodeapoyo.inspectioncases.model.CaseAssignment;
 import com.puntodeapoyo.inspectioncases.model.InspectionCase;
 import com.puntodeapoyo.inspectioncases.model.PhotoEvidence;
 import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
+import com.puntodeapoyo.inspectioncases.model.TechnicalObservation;
 import com.puntodeapoyo.inspectioncases.repository.CaseAssignmentRepository;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository.CreateInspectionCaseCommand;
 import com.puntodeapoyo.inspectioncases.repository.PhotoEvidenceRepository;
 import com.puntodeapoyo.inspectioncases.repository.PhotoEvidenceRepository.CreatePhotoEvidenceCommand;
+import com.puntodeapoyo.inspectioncases.repository.TechnicalObservationRepository;
+import com.puntodeapoyo.inspectioncases.repository.TechnicalObservationRepository.CreateTechnicalObservationCommand;
 import com.puntodeapoyo.inspectioncases.service.InspectionCaseService;
 import com.puntodeapoyo.inspectioncases.storage.PhotoStorageService;
 import com.puntodeapoyo.inspectioncases.storage.StoredPhoto;
@@ -53,6 +58,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
     private final InspectionCaseRepository inspectionCaseRepository;
     private final PhotoEvidenceRepository photoEvidenceRepository;
     private final CaseAssignmentRepository caseAssignmentRepository;
+    private final TechnicalObservationRepository technicalObservationRepository;
     private final InternalUserRepository internalUserRepository;
     private final PhotoStorageService photoStorageService;
 
@@ -60,12 +66,14 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
             InspectionCaseRepository inspectionCaseRepository,
             PhotoEvidenceRepository photoEvidenceRepository,
             CaseAssignmentRepository caseAssignmentRepository,
+            TechnicalObservationRepository technicalObservationRepository,
             InternalUserRepository internalUserRepository,
             PhotoStorageService photoStorageService
     ) {
         this.inspectionCaseRepository = inspectionCaseRepository;
         this.photoEvidenceRepository = photoEvidenceRepository;
         this.caseAssignmentRepository = caseAssignmentRepository;
+        this.technicalObservationRepository = technicalObservationRepository;
         this.internalUserRepository = internalUserRepository;
         this.photoStorageService = photoStorageService;
     }
@@ -233,6 +241,52 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         return findInternalCase(caseId);
     }
 
+    @Override
+    @Transactional
+    public TechnicalObservationResponse createTechnicalObservation(
+            Long caseId,
+            Long currentUserId,
+            String currentUserRole,
+            CreateTechnicalObservationRequest request,
+            List<MultipartFile> photos
+    ) {
+        InspectionCase inspectionCase = inspectionCaseRepository.findById(caseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
+
+        validateAssignedCaseAccess(caseId, currentUserId, currentUserRole);
+        if (inspectionCase.status() == InspectionCaseStatus.ASIGNADO) {
+            inspectionCaseRepository.updateStatus(caseId, InspectionCaseStatus.EN_PROCESO);
+        }
+
+        List<MultipartFile> normalizedPhotos = normalizePhotos(photos);
+        validatePhotos(normalizedPhotos);
+        validateTotalPhotoLimit(caseId, normalizedPhotos.size());
+
+        TechnicalObservation technicalObservation = technicalObservationRepository.create(
+                new CreateTechnicalObservationCommand(
+                        caseId,
+                        currentUserId,
+                        normalizeRequired(request.observations()),
+                        normalizeRequired(request.recommendations()),
+                        request.structuralRisk()
+                )
+        );
+
+        List<PhotoEvidenceResponse> photoResponses = storePhotos(
+                inspectionCase.id(),
+                inspectionCase.trackingCode(),
+                normalizedPhotos,
+                currentUserId,
+                false
+        );
+        technicalObservationRepository.linkPhotos(
+                technicalObservation.id(),
+                photoResponses.stream().map(PhotoEvidenceResponse::id).toList()
+        );
+
+        return TechnicalObservationResponse.from(technicalObservation, photoResponses);
+    }
+
     private List<PhotoEvidenceResponse> storePhotos(
             Long caseId,
             String trackingCode,
@@ -289,6 +343,16 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
                 .map(CaseAssignmentResponse::from)
                 .toList();
         return InspectionCaseResponse.from(inspectionCase, photos, assignments);
+    }
+
+    private void validateAssignedCaseAccess(Long caseId, Long currentUserId, String currentUserRole) {
+        if (caseAssignmentRepository.countByCaseId(caseId) == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El caso debe estar asignado");
+        }
+        if (UserRole.ENGINEER.name().equals(currentUserRole)
+                && !caseAssignmentRepository.existsByCaseIdAndEngineerId(caseId, currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El ingeniero no esta asignado a este caso");
+        }
     }
 
     private List<Long> normalizeEngineerIds(List<Long> engineerIds) {

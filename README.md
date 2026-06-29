@@ -334,3 +334,49 @@ Reglas:
 - `ADMIN` puede actualizar cualquier caso asignado.
 - `ENGINEER` solo puede actualizar casos donde este asignado.
 - No se permite cambiar a `PENDIENTE` ni `ASIGNADO` desde este endpoint.
+
+## Observaciones tecnicas
+
+Requiere JWT de usuario interno con rol `ADMIN` o `ENGINEER`.
+
+Reglas:
+
+- El caso debe tener al menos un ingeniero asignado.
+- `ADMIN` puede registrar observaciones en cualquier caso asignado.
+- `ENGINEER` solo puede registrar observaciones en casos donde este asignado.
+- Si el caso esta en `ASIGNADO`, al registrar la observacion pasa automaticamente a `EN_PROCESO`.
+- Las fotos usan las mismas restricciones de evidencia fotografica: maximo 10 imagenes por caso, maximo 10 MB por imagen y solo tipos `image/*`.
+
+Registrar observacion tecnica sin fotos:
+
+```bash
+curl -X POST http://localhost:8080/api/inspection-cases/1/technical-observations \
+  -H "Authorization: Bearer <accessToken>" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "observations": "Fisuras diagonales en paredes internas y humedad en losa.",
+    "recommendations": "Apuntalar el area afectada y programar evaluacion estructural detallada.",
+    "structuralRisk": "HIGH"
+  }'
+```
+
+Registrar observacion tecnica con fotos:
+
+```bash
+curl -X POST http://localhost:8080/api/inspection-cases/1/technical-observations \
+  -H "Authorization: Bearer <accessToken>" \
+  -F 'observation={
+    "observations": "Fisuras diagonales en paredes internas y humedad en losa.",
+    "recommendations": "Apuntalar el area afectada y programar evaluacion estructural detallada.",
+    "structuralRisk": "HIGH"
+  };type=application/json' \
+  -F 'photos=@/ruta/foto-1.jpg;type=image/jpeg' \
+  -F 'photos=@/ruta/foto-2.png;type=image/png'
+```
+
+Valores permitidos para `structuralRisk`:
+
+- `LOW`
+- `MEDIUM`
+- `HIGH`
+- `CRITICAL`
