@@ -10,14 +10,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.puntodeapoyo.inspectioncases.dto.*;
 import com.puntodeapoyo.inspectioncases.model.InspectionCasePriority;
 import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
+import com.puntodeapoyo.inspectioncases.service.InspectionCasePdfService;
 import com.puntodeapoyo.inspectioncases.service.InspectionCaseService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,15 +41,18 @@ import org.springframework.web.multipart.MultipartFile;
 public class InspectionCaseController {
 
     private final InspectionCaseService inspectionCaseService;
+    private final InspectionCasePdfService inspectionCasePdfService;
     private final ObjectMapper objectMapper;
     private final Validator validator;
 
     public InspectionCaseController(
             InspectionCaseService inspectionCaseService,
+            InspectionCasePdfService inspectionCasePdfService,
             ObjectMapper objectMapper,
             Validator validator
     ) {
         this.inspectionCaseService = inspectionCaseService;
+        this.inspectionCasePdfService = inspectionCasePdfService;
         this.objectMapper = objectMapper;
         this.validator = validator;
     }
@@ -174,6 +181,29 @@ public class InspectionCaseController {
                 request,
                 mergePhotos(photos, photo)
         );
+    }
+
+    @GetMapping(
+            value = "/api/inspection-cases/{id}/inspection-report.pdf",
+            produces = MediaType.APPLICATION_PDF_VALUE
+    )
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR', 'ENGINEER')")
+    public ResponseEntity<byte[]> downloadInspectionReport(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        byte[] pdf = inspectionCasePdfService.generateInspectionReport(
+                id,
+                jwt.getClaim("user_id"),
+                jwt.getClaimAsString("role")
+        );
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename("inspection-case-" + id + ".pdf")
+                        .build()
+                        .toString())
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     @GetMapping("/api/inspection-cases")

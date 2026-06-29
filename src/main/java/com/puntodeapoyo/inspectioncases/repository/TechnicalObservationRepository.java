@@ -59,6 +59,17 @@ public class TechnicalObservationRepository {
         return jdbcTemplate.queryForObject(sql, this::mapObservationRow, id);
     }
 
+    public List<TechnicalObservation> findByCaseId(Long caseId) {
+        String sql = """
+                SELECT id, case_id, created_by_user_id, observations, recommendations,
+                       structural_risk, created_at, updated_at
+                FROM technical_observations
+                WHERE case_id = ?
+                ORDER BY created_at ASC, id ASC
+                """;
+        return jdbcTemplate.query(sql, this::mapObservationRow, caseId);
+    }
+
     public void linkPhotos(Long technicalObservationId, List<Long> photoEvidenceIds) {
         if (photoEvidenceIds.isEmpty()) {
             return;

@@ -437,3 +437,21 @@ MAIL_PORT=1025
 MAIL_SMTP_AUTH=false
 MAIL_SMTP_STARTTLS_ENABLE=false
 ```
+
+## PDF de inspeccion
+
+Requiere JWT de usuario interno con rol `ADMIN`, `COORDINATOR` o `ENGINEER`.
+
+Reglas:
+
+- `ADMIN` y `COORDINATOR` pueden descargar el PDF de cualquier caso.
+- `ENGINEER` solo puede descargar el PDF si esta asignado al caso.
+- El PDF incluye tracking code, direccion, ubicacion, estado final, responsables, observaciones tecnicas y fotos disponibles en el servidor.
+
+Descargar PDF por caso:
+
+```bash
+curl -L -o inspeccion-VZ-2026-00000001.pdf \
+  http://localhost:8080/api/inspection-cases/1/inspection-report.pdf \
+  -H "Authorization: Bearer <accessToken>"
+```
