@@ -161,9 +161,38 @@ Respuesta esperada:
 {
   "id": 1,
   "trackingCode": "VZ-2026-00000001",
-  "status": "PENDIENTE"
+  "status": "PENDIENTE",
+  "photos": []
 }
 ```
+
+Tambien se puede crear un caso con fotografias usando `multipart/form-data`.
+El part `case` debe enviarse como JSON (`application/json`) y `photos` puede repetirse hasta 10 veces:
+
+```bash
+curl -X POST http://localhost:8080/api/public/inspection-cases \
+  -F 'case={
+    "applicantName": "Maria Perez",
+    "applicantPhone": "+58 412 555-1212",
+    "address": "Av. Principal, Casa 12",
+    "city": "Caracas",
+    "stateRegion": "Distrito Capital",
+    "description": "Grietas visibles en paredes y filtracion de agua en techo",
+    "latitude": 10.5001234,
+    "longitude": -66.9012345,
+    "priority": "HIGH"
+  };type=application/json' \
+  -F 'photos=@/ruta/foto-1.jpg;type=image/jpeg' \
+  -F 'photos=@/ruta/foto-2.png;type=image/png'
+```
+
+Restricciones:
+
+- Maximo 10 imagenes por caso.
+- Maximo 10 MB por imagen.
+- Solo se permiten archivos con `content_type` de imagen, por ejemplo `image/jpeg` o `image/png`.
+- En desarrollo los archivos se guardan en `APP_UPLOAD_DIR`, por defecto `uploads/`.
+- La API devuelve `photos[].fileUrl`, por ejemplo `/uploads/inspection-cases/VZ-2026-00000001/<archivo>`.
 
 Consultar estado publicamente con codigo de caso y telefono:
 
@@ -229,4 +258,13 @@ Los filtros se pueden combinar:
 ```bash
 curl "http://localhost:8080/api/inspection-cases?city=Caracas&status=PENDIENTE&priority=HIGH&createdDate=2026-06-28" \
   -H "Authorization: Bearer <accessToken>"
+```
+
+Subir fotografias a un caso existente como usuario interno:
+
+```bash
+curl -X POST http://localhost:8080/api/inspection-cases/1/photos \
+  -H "Authorization: Bearer <accessToken>" \
+  -F 'photos=@/ruta/foto-1.jpg;type=image/jpeg' \
+  -F 'photos=@/ruta/foto-2.png;type=image/png'
 ```

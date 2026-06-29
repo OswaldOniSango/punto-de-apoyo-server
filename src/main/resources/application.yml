@@ -1,6 +1,10 @@
 spring:
   application:
     name: punto-de-apoyo
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 110MB
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -28,3 +32,5 @@ app:
       issuer: ${JWT_ISSUER:punto-de-apoyo}
       secret: ${JWT_SECRET}
       expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+  storage:
+    upload-dir: ${APP_UPLOAD_DIR:uploads}

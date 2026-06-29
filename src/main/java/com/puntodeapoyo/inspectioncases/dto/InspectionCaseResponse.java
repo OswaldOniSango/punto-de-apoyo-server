@@ -2,6 +2,7 @@ package com.puntodeapoyo.inspectioncases.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.puntodeapoyo.inspectioncases.model.InspectionCase;
 import com.puntodeapoyo.inspectioncases.model.InspectionCasePriority;
@@ -22,10 +23,18 @@ public record InspectionCaseResponse(
         InspectionCasePriority priority,
         InspectionCaseStatus status,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        List<PhotoEvidenceResponse> photos
 ) {
 
     public static InspectionCaseResponse from(InspectionCase inspectionCase) {
+        return from(inspectionCase, List.of());
+    }
+
+    public static InspectionCaseResponse from(
+            InspectionCase inspectionCase,
+            List<PhotoEvidenceResponse> photos
+    ) {
         return new InspectionCaseResponse(
                 inspectionCase.id(),
                 inspectionCase.trackingCode(),
@@ -41,7 +50,8 @@ public record InspectionCaseResponse(
                 inspectionCase.priority(),
                 inspectionCase.status(),
                 inspectionCase.createdAt(),
-                inspectionCase.updatedAt()
+                inspectionCase.updatedAt(),
+                photos
         );
     }
 }
