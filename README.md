@@ -164,3 +164,55 @@ Respuesta esperada:
   "status": "PENDIENTE"
 }
 ```
+
+Consultar estado publicamente con codigo de caso y telefono:
+
+```bash
+curl "http://localhost:8080/api/public/inspection-cases/status?trackingCode=VZ-2026-00000001&phone=%2B58%20412%20555-1212"
+```
+
+## Consulta de casos de inspeccion
+
+Requiere JWT de usuario interno (`ADMIN`, `COORDINATOR` o `ENGINEER`).
+
+Consultar por codigo:
+
+```bash
+curl "http://localhost:8080/api/inspection-cases?trackingCode=VZ-2026-00000001" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Consultar por estado:
+
+```bash
+curl "http://localhost:8080/api/inspection-cases?status=PENDIENTE" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Consultar por ciudad:
+
+```bash
+curl "http://localhost:8080/api/inspection-cases?city=Caracas" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Consultar por prioridad:
+
+```bash
+curl "http://localhost:8080/api/inspection-cases?priority=HIGH" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Consultar por fecha de creacion:
+
+```bash
+curl "http://localhost:8080/api/inspection-cases?createdDate=2026-06-28" \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Los filtros se pueden combinar:
+
+```bash
+curl "http://localhost:8080/api/inspection-cases?city=Caracas&status=PENDIENTE&priority=HIGH&createdDate=2026-06-28" \
+  -H "Authorization: Bearer <accessToken>"
+```
