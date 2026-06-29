@@ -15,6 +15,16 @@ Configuracion:
 
 Cada push a `main` despliega la landing automaticamente desde Cloudflare Pages.
 
+## Formulario de voluntarios
+
+La pagina `voluntarios.html` contiene el formulario de postulacion y envia las respuestas a Formspree:
+
+```text
+https://formspree.io/f/xjgqonky
+```
+
+Formspree guardara las postulaciones y tambien puede enviarlas por correo.
+
 ## Dominio
 
 Para conectar `puntodeapoyo.org`:
