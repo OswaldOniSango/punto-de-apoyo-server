@@ -22,7 +22,7 @@ public interface InspectionCaseService {
 
     InspectionCaseResponse assignEngineers(Long caseId, Long assignedByUserId, List<Long> engineerIds);
 
-    InspectionCaseResponse removeEngineerAssignment(Long caseId, Long engineerId);
+    InspectionCaseResponse removeEngineerAssignment(Long caseId, Long engineerId, Long currentUserId);
 
     InspectionCaseResponse updateAssignedCaseStatus(
             Long caseId,

@@ -380,3 +380,20 @@ Valores permitidos para `structuralRisk`:
 - `MEDIUM`
 - `HIGH`
 - `CRITICAL`
+
+## Eventos de dominio
+
+La aplicacion publica eventos internos de Spring para desacoplar acciones futuras como notificaciones, auditoria o integraciones.
+
+Eventos disponibles:
+
+- `CaseCreatedEvent`: se emite al crear un caso.
+- `CaseAssignedEvent`: se emite cuando se asignan nuevos ingenieros a un caso.
+- `CaseStatusChangedEvent`: se emite cuando el estado del caso cambia.
+
+Casos que emiten `CaseStatusChangedEvent`:
+
+- Al asignar un caso y cambiarlo a `ASIGNADO`.
+- Al eliminar la ultima asignacion y volverlo a `PENDIENTE`.
+- Al cambiar manualmente a `EN_PROCESO`, `INSPECCIONADO` o `CERRADO`.
+- Al registrar una observacion tecnica sobre un caso `ASIGNADO`, que pasa automaticamente a `EN_PROCESO`.

@@ -111,9 +111,10 @@ public class InspectionCaseController {
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
     public InspectionCaseResponse removeEngineerAssignment(
             @PathVariable Long id,
-            @PathVariable Long engineerId
+            @PathVariable Long engineerId,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        return inspectionCaseService.removeEngineerAssignment(id, engineerId);
+        return inspectionCaseService.removeEngineerAssignment(id, engineerId, jwt.getClaim("user_id"));
     }
 
     @PatchMapping("/api/inspection-cases/{id}/status")
