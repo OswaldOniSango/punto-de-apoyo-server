@@ -20,5 +20,7 @@ public interface InspectionCaseService {
 
     InspectionCaseResponse assignEngineers(Long caseId, Long assignedByUserId, List<Long> engineerIds);
 
+    InspectionCaseResponse removeEngineerAssignment(Long caseId, Long engineerId);
+
     List<InspectionCaseResponse> search(InspectionCaseSearchCriteria criteria);
 }

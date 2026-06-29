@@ -49,6 +49,25 @@ public class CaseAssignmentRepository {
         return jdbcTemplate.query(sql, this::mapRow, caseId);
     }
 
+    public boolean deleteByCaseIdAndEngineerId(Long caseId, Long engineerId) {
+        String sql = """
+                DELETE FROM case_assignments
+                WHERE case_id = ?
+                  AND engineer_id = ?
+                """;
+        return jdbcTemplate.update(sql, caseId, engineerId) > 0;
+    }
+
+    public int countByCaseId(Long caseId) {
+        String sql = """
+                SELECT COUNT(*)
+                FROM case_assignments
+                WHERE case_id = ?
+                """;
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, caseId);
+        return count == null ? 0 : count;
+    }
+
     public List<CaseAssignment> findByCaseIds(List<Long> caseIds) {
         if (caseIds.isEmpty()) {
             return List.of();

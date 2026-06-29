@@ -181,6 +181,23 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         return findInternalCase(caseId);
     }
 
+    @Override
+    @Transactional
+    public InspectionCaseResponse removeEngineerAssignment(Long caseId, Long engineerId) {
+        inspectionCaseRepository.findById(caseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
+
+        if (!caseAssignmentRepository.deleteByCaseIdAndEngineerId(caseId, engineerId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Asignacion no encontrada");
+        }
+
+        if (caseAssignmentRepository.countByCaseId(caseId) == 0) {
+            inspectionCaseRepository.updateStatus(caseId, InspectionCaseStatus.PENDIENTE);
+        }
+
+        return findInternalCase(caseId);
+    }
+
     private List<PhotoEvidenceResponse> storePhotos(
             Long caseId,
             String trackingCode,

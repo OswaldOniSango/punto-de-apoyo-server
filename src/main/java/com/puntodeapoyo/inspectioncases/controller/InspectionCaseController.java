@@ -25,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -107,6 +108,15 @@ public class InspectionCaseController {
             @AuthenticationPrincipal Jwt jwt
     ) {
         return inspectionCaseService.assignEngineers(id, jwt.getClaim("user_id"), request.engineerIds());
+    }
+
+    @DeleteMapping("/api/inspection-cases/{id}/assignments/{engineerId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    public InspectionCaseResponse removeEngineerAssignment(
+            @PathVariable Long id,
+            @PathVariable Long engineerId
+    ) {
+        return inspectionCaseService.removeEngineerAssignment(id, engineerId);
     }
 
     @GetMapping("/api/inspection-cases")
