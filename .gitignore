@@ -1,4 +1,8 @@
 target/
+uploads/
+.env
+.env.*
+!.env.example
 .idea/
 .vscode/
 *.iml

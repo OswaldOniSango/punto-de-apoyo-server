@@ -1,8 +1,0 @@
-CREATE TABLE health_check (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
-);
-
-INSERT INTO health_check (status) VALUES ('ok');
