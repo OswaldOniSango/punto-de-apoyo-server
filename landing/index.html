@@ -41,7 +41,7 @@
       justify-content: space-between;
       background:
         linear-gradient(90deg, rgba(10, 23, 18, 0.78), rgba(10, 23, 18, 0.42)),
-        url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=80") center / cover;
+        url("assets/caracas.webp") center / cover;
       color: var(--white);
     }
 
@@ -68,13 +68,12 @@
     }
 
     .mark {
-      display: grid;
-      place-items: center;
       width: 36px;
       height: 36px;
+      object-fit: cover;
       border: 1px solid rgba(255, 255, 255, 0.72);
       border-radius: 8px;
-      font-weight: 800;
+      background: var(--white);
     }
 
     .domain {
@@ -134,6 +133,48 @@
     .info {
       padding: 44px 0 54px;
       background: var(--surface);
+    }
+
+    .volunteers {
+      padding: 54px 0;
+      background: var(--white);
+      border-top: 1px solid var(--line);
+    }
+
+    .volunteer-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 32px;
+      align-items: center;
+      padding: 32px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcf9;
+    }
+
+    .volunteer-panel p {
+      max-width: 720px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 22px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: var(--white);
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .button:hover {
+      background: var(--accent-dark);
     }
 
     .section-inner {
@@ -209,6 +250,15 @@
         grid-template-columns: 1fr;
         gap: 28px;
       }
+
+      .volunteer-panel {
+        grid-template-columns: 1fr;
+        padding: 24px;
+      }
+
+      .button {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -217,7 +267,7 @@
     <section class="hero" aria-label="Punto de Apoyo">
       <header class="topbar">
         <div class="brand">
-          <div class="mark" aria-hidden="true">PA</div>
+          <img class="mark" src="assets/logo-punto-de-apoyo.jpg" alt="">
           <span>Punto de Apoyo</span>
         </div>
         <div class="domain">puntodeapoyo.org</div>
@@ -240,7 +290,7 @@
     <section class="info" aria-label="Informacion">
       <div class="section-inner">
         <div>
-          <h2>Una herramienta para registrar, revisar y acompanar casos.</h2>
+          <h2>Una herramienta para registrar, revisar y acompañar casos.</h2>
           <p class="copy">
             Nuestro objetivo es facilitar el registro de solicitudes, la asignacion tecnica y el seguimiento
             de inspecciones de forma clara y segura.
@@ -261,6 +311,21 @@
             <span>Estado del caso y reporte de inspeccion.</span>
           </li>
         </ul>
+      </div>
+    </section>
+
+    <section class="volunteers" aria-label="Voluntarios IT">
+      <div class="section-inner">
+        <div class="volunteer-panel">
+          <div>
+            <h2>Buscamos profesionales en el area IT.</h2>
+            <p>
+              Si crees que puedes ayudarnos a construir sistemas interesantes para ayudar a nuestra gente, haz clic en postulate.
+              Te contactaremos tan pronto como podamos.
+            </p>
+          </div>
+          <a class="button" href="voluntarios.html">Postularme</a>
+        </div>
       </div>
     </section>
   </main>
