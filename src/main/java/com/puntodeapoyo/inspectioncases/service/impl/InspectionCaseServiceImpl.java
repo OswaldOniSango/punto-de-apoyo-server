@@ -17,6 +17,9 @@ import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
 import com.puntodeapoyo.inspectioncases.dto.PhotoEvidenceResponse;
 import com.puntodeapoyo.inspectioncases.dto.TechnicalObservationResponse;
+import com.puntodeapoyo.inspectioncases.events.CaseAssignedEvent;
+import com.puntodeapoyo.inspectioncases.events.CaseCreatedEvent;
+import com.puntodeapoyo.inspectioncases.events.CaseStatusChangedEvent;
 import com.puntodeapoyo.inspectioncases.model.CaseAssignment;
 import com.puntodeapoyo.inspectioncases.model.InspectionCase;
 import com.puntodeapoyo.inspectioncases.model.PhotoEvidence;
@@ -36,6 +39,7 @@ import com.puntodeapoyo.users.model.InternalUser;
 import com.puntodeapoyo.users.model.UserRole;
 import com.puntodeapoyo.users.model.UserStatus;
 import com.puntodeapoyo.users.repository.InternalUserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +65,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
     private final TechnicalObservationRepository technicalObservationRepository;
     private final InternalUserRepository internalUserRepository;
     private final PhotoStorageService photoStorageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public InspectionCaseServiceImpl(
             InspectionCaseRepository inspectionCaseRepository,
@@ -68,7 +73,8 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
             CaseAssignmentRepository caseAssignmentRepository,
             TechnicalObservationRepository technicalObservationRepository,
             InternalUserRepository internalUserRepository,
-            PhotoStorageService photoStorageService
+            PhotoStorageService photoStorageService,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.inspectionCaseRepository = inspectionCaseRepository;
         this.photoEvidenceRepository = photoEvidenceRepository;
@@ -76,6 +82,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         this.technicalObservationRepository = technicalObservationRepository;
         this.internalUserRepository = internalUserRepository;
         this.photoStorageService = photoStorageService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -117,6 +124,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
                 true
         );
 
+        eventPublisher.publishEvent(CaseCreatedEvent.now(inspectionCase.id(), inspectionCase.trackingCode()));
         return InspectionCaseResponse.from(inspectionCase, photoResponses);
     }
 
@@ -180,7 +188,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
     @Override
     @Transactional
     public InspectionCaseResponse assignEngineers(Long caseId, Long assignedByUserId, List<Long> engineerIds) {
-        inspectionCaseRepository.findById(caseId)
+        InspectionCase inspectionCase = inspectionCaseRepository.findById(caseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
 
         List<Long> normalizedEngineerIds = normalizeEngineerIds(engineerIds);
@@ -189,16 +197,28 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         }
 
         validateEngineers(normalizedEngineerIds);
-        caseAssignmentRepository.createMany(caseId, normalizedEngineerIds, assignedByUserId);
-        inspectionCaseRepository.updateStatus(caseId, InspectionCaseStatus.ASIGNADO);
+        List<Long> createdEngineerIds = caseAssignmentRepository.createMany(
+                caseId,
+                normalizedEngineerIds,
+                assignedByUserId
+        );
+        if (!createdEngineerIds.isEmpty()) {
+            eventPublisher.publishEvent(CaseAssignedEvent.now(
+                    inspectionCase.id(),
+                    inspectionCase.trackingCode(),
+                    createdEngineerIds,
+                    assignedByUserId
+            ));
+        }
+        updateStatusAndPublish(inspectionCase, InspectionCaseStatus.ASIGNADO, assignedByUserId);
 
         return findInternalCase(caseId);
     }
 
     @Override
     @Transactional
-    public InspectionCaseResponse removeEngineerAssignment(Long caseId, Long engineerId) {
-        inspectionCaseRepository.findById(caseId)
+    public InspectionCaseResponse removeEngineerAssignment(Long caseId, Long engineerId, Long currentUserId) {
+        InspectionCase inspectionCase = inspectionCaseRepository.findById(caseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
 
         if (!caseAssignmentRepository.deleteByCaseIdAndEngineerId(caseId, engineerId)) {
@@ -206,7 +226,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         }
 
         if (caseAssignmentRepository.countByCaseId(caseId) == 0) {
-            inspectionCaseRepository.updateStatus(caseId, InspectionCaseStatus.PENDIENTE);
+            updateStatusAndPublish(inspectionCase, InspectionCaseStatus.PENDIENTE, currentUserId);
         }
 
         return findInternalCase(caseId);
@@ -220,7 +240,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
             String currentUserRole,
             InspectionCaseStatus status
     ) {
-        inspectionCaseRepository.findById(caseId)
+        InspectionCase inspectionCase = inspectionCaseRepository.findById(caseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
 
         if (!ASSIGNED_CASE_STATUSES.contains(status)) {
@@ -237,7 +257,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El ingeniero no esta asignado a este caso");
         }
 
-        inspectionCaseRepository.updateStatus(caseId, status);
+        updateStatusAndPublish(inspectionCase, status, currentUserId);
         return findInternalCase(caseId);
     }
 
@@ -255,7 +275,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
 
         validateAssignedCaseAccess(caseId, currentUserId, currentUserRole);
         if (inspectionCase.status() == InspectionCaseStatus.ASIGNADO) {
-            inspectionCaseRepository.updateStatus(caseId, InspectionCaseStatus.EN_PROCESO);
+            updateStatusAndPublish(inspectionCase, InspectionCaseStatus.EN_PROCESO, currentUserId);
         }
 
         List<MultipartFile> normalizedPhotos = normalizePhotos(photos);
@@ -263,13 +283,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         validateTotalPhotoLimit(caseId, normalizedPhotos.size());
 
         TechnicalObservation technicalObservation = technicalObservationRepository.create(
-                new CreateTechnicalObservationCommand(
-                        caseId,
-                        currentUserId,
-                        normalizeRequired(request.observations()),
-                        normalizeRequired(request.recommendations()),
-                        request.structuralRisk()
-                )
+                new CreateTechnicalObservationCommand(caseId, currentUserId, normalizeRequired(request.observations()), normalizeRequired(request.recommendations()), request.structuralRisk())
         );
 
         List<PhotoEvidenceResponse> photoResponses = storePhotos(
@@ -285,6 +299,21 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         );
 
         return TechnicalObservationResponse.from(technicalObservation, photoResponses);
+    }
+
+    private void updateStatusAndPublish(InspectionCase inspectionCase, InspectionCaseStatus newStatus, Long changedByUserId) {
+        if (inspectionCase.status() == newStatus) {
+            return;
+        }
+
+        inspectionCaseRepository.updateStatus(inspectionCase.id(), newStatus);
+        eventPublisher.publishEvent(CaseStatusChangedEvent.now(
+                inspectionCase.id(),
+                inspectionCase.trackingCode(),
+                inspectionCase.status(),
+                newStatus,
+                changedByUserId
+        ));
     }
 
     private List<PhotoEvidenceResponse> storePhotos(

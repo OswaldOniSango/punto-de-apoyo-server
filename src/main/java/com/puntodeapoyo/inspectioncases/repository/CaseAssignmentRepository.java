@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.puntodeapoyo.inspectioncases.model.CaseAssignment;
@@ -19,13 +20,13 @@ public class CaseAssignmentRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void createMany(Long caseId, List<Long> engineerIds, Long assignedBy) {
+    public List<Long> createMany(Long caseId, List<Long> engineerIds, Long assignedBy) {
         String sql = """
                 INSERT IGNORE INTO case_assignments (case_id, engineer_id, assigned_by)
                 VALUES (?, ?, ?)
                 """;
 
-        jdbcTemplate.batchUpdate(
+        int[][] updateCounts = jdbcTemplate.batchUpdate(
                 sql,
                 engineerIds,
                 engineerIds.size(),
@@ -35,6 +36,14 @@ public class CaseAssignmentRepository {
                     statement.setLong(3, assignedBy);
                 }
         );
+
+        List<Long> createdEngineerIds = new ArrayList<>();
+        for (int index = 0; index < updateCounts[0].length; index++) {
+            if (updateCounts[0][index] > 0) {
+                createdEngineerIds.add(engineerIds.get(index));
+            }
+        }
+        return createdEngineerIds;
     }
 
     public List<CaseAssignment> findByCaseId(Long caseId) {
