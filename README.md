@@ -397,3 +397,43 @@ Casos que emiten `CaseStatusChangedEvent`:
 - Al eliminar la ultima asignacion y volverlo a `PENDIENTE`.
 - Al cambiar manualmente a `EN_PROCESO`, `INSPECCIONADO` o `CERRADO`.
 - Al registrar una observacion tecnica sobre un caso `ASIGNADO`, que pasa automaticamente a `EN_PROCESO`.
+
+## Notificaciones por correo
+
+Las notificaciones por correo escuchan los eventos de dominio y se envian despues de confirmar la transaccion.
+
+Eventos que envian correo:
+
+- Caso creado.
+- Caso asignado.
+- Estado actualizado.
+
+Destinatarios:
+
+- `EMAIL_INTERNAL_RECIPIENTS`: recibe notificaciones internas generales.
+- `applicantEmail`: recibe correo cuando se crea el caso y cuando cambia su estado, si el ciudadano lo informo.
+- Ingenieros asignados: reciben correo cuando se les asigna un caso.
+
+Variables de entorno:
+
+```bash
+EMAIL_NOTIFICATIONS_ENABLED=true
+EMAIL_FROM=no-reply@puntodeapoyo.org
+EMAIL_INTERNAL_RECIPIENTS=coordinacion@puntodeapoyo.org,admin@puntodeapoyo.org
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=replace_me
+MAIL_PASSWORD=replace_me
+MAIL_SMTP_AUTH=true
+MAIL_SMTP_STARTTLS_ENABLE=true
+```
+
+En desarrollo se puede usar MailHog o Mailpit con:
+
+```bash
+EMAIL_NOTIFICATIONS_ENABLED=true
+MAIL_HOST=localhost
+MAIL_PORT=1025
+MAIL_SMTP_AUTH=false
+MAIL_SMTP_STARTTLS_ENABLE=false
+```
