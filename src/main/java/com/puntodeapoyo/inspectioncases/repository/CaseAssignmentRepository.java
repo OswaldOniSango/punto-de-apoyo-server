@@ -68,6 +68,17 @@ public class CaseAssignmentRepository {
         return count == null ? 0 : count;
     }
 
+    public boolean existsByCaseIdAndEngineerId(Long caseId, Long engineerId) {
+        String sql = """
+                SELECT COUNT(*)
+                FROM case_assignments
+                WHERE case_id = ?
+                  AND engineer_id = ?
+                """;
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, caseId, engineerId);
+        return count != null && count > 0;
+    }
+
     public List<CaseAssignment> findByCaseIds(List<Long> caseIds) {
         if (caseIds.isEmpty()) {
             return List.of();

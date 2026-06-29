@@ -2,6 +2,7 @@ package com.puntodeapoyo.inspectioncases.service.impl;
 
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,6 +44,11 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
     private static final int TRACKING_NUMBER_WIDTH = 8;
     private static final int MAX_PHOTOS = 10;
     private static final long MAX_PHOTO_SIZE_BYTES = 10 * 1024 * 1024;
+    private static final Set<InspectionCaseStatus> ASSIGNED_CASE_STATUSES = EnumSet.of(
+            InspectionCaseStatus.EN_PROCESO,
+            InspectionCaseStatus.INSPECCIONADO,
+            InspectionCaseStatus.CERRADO
+    );
 
     private final InspectionCaseRepository inspectionCaseRepository;
     private final PhotoEvidenceRepository photoEvidenceRepository;
@@ -195,6 +201,35 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
             inspectionCaseRepository.updateStatus(caseId, InspectionCaseStatus.PENDIENTE);
         }
 
+        return findInternalCase(caseId);
+    }
+
+    @Override
+    @Transactional
+    public InspectionCaseResponse updateAssignedCaseStatus(
+            Long caseId,
+            Long currentUserId,
+            String currentUserRole,
+            InspectionCaseStatus status
+    ) {
+        inspectionCaseRepository.findById(caseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
+
+        if (!ASSIGNED_CASE_STATUSES.contains(status)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Solo se permiten los status EN_PROCESO, INSPECCIONADO o CERRADO"
+            );
+        }
+        if (caseAssignmentRepository.countByCaseId(caseId) == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El caso debe estar asignado");
+        }
+        if (UserRole.ENGINEER.name().equals(currentUserRole)
+                && !caseAssignmentRepository.existsByCaseIdAndEngineerId(caseId, currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El ingeniero no esta asignado a este caso");
+        }
+
+        inspectionCaseRepository.updateStatus(caseId, status);
         return findInternalCase(caseId);
     }
 
