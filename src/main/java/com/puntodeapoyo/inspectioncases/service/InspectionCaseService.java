@@ -20,5 +20,14 @@ public interface InspectionCaseService {
 
     InspectionCaseResponse assignEngineers(Long caseId, Long assignedByUserId, List<Long> engineerIds);
 
+    InspectionCaseResponse removeEngineerAssignment(Long caseId, Long engineerId);
+
+    InspectionCaseResponse updateAssignedCaseStatus(
+            Long caseId,
+            Long currentUserId,
+            String currentUserRole,
+            com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus status
+    );
+
     List<InspectionCaseResponse> search(InspectionCaseSearchCriteria criteria);
 }

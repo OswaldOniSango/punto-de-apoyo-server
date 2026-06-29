@@ -12,6 +12,7 @@ import com.puntodeapoyo.inspectioncases.dto.CreateInspectionCaseRequest;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
 import com.puntodeapoyo.inspectioncases.dto.PhotoEvidenceResponse;
+import com.puntodeapoyo.inspectioncases.dto.UpdateInspectionCaseStatusRequest;
 import com.puntodeapoyo.inspectioncases.model.InspectionCasePriority;
 import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
 import com.puntodeapoyo.inspectioncases.service.InspectionCaseService;
@@ -25,7 +26,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -107,6 +110,30 @@ public class InspectionCaseController {
             @AuthenticationPrincipal Jwt jwt
     ) {
         return inspectionCaseService.assignEngineers(id, jwt.getClaim("user_id"), request.engineerIds());
+    }
+
+    @DeleteMapping("/api/inspection-cases/{id}/assignments/{engineerId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    public InspectionCaseResponse removeEngineerAssignment(
+            @PathVariable Long id,
+            @PathVariable Long engineerId
+    ) {
+        return inspectionCaseService.removeEngineerAssignment(id, engineerId);
+    }
+
+    @PatchMapping("/api/inspection-cases/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ENGINEER')")
+    public InspectionCaseResponse updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateInspectionCaseStatusRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return inspectionCaseService.updateAssignedCaseStatus(
+                id,
+                jwt.getClaim("user_id"),
+                jwt.getClaimAsString("role"),
+                request.status()
+        );
     }
 
     @GetMapping("/api/inspection-cases")

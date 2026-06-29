@@ -268,3 +268,69 @@ curl -X POST http://localhost:8080/api/inspection-cases/1/photos \
   -F 'photos=@/ruta/foto-1.jpg;type=image/jpeg' \
   -F 'photos=@/ruta/foto-2.png;type=image/png'
 ```
+
+## Asignacion de ingenieros a casos
+
+Requiere JWT de usuario interno con rol `ADMIN` o `COORDINATOR`.
+
+Listar ingenieros activos disponibles para asignar:
+
+```bash
+curl http://localhost:8080/api/users/engineers \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Asignar uno o mas ingenieros a un caso:
+
+```bash
+curl -X POST http://localhost:8080/api/inspection-cases/1/assignments \
+  -H "Authorization: Bearer <accessToken>" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "engineerIds": [3, 4]
+  }'
+```
+
+Reglas:
+
+- Los usuarios asignados deben existir.
+- Los usuarios asignados deben tener rol `ENGINEER`.
+- Los usuarios asignados deben estar `ACTIVE`.
+- No se duplican asignaciones del mismo ingeniero al mismo caso.
+- Al asignar, el caso pasa a `ASIGNADO`.
+
+Eliminar la asignacion de un ingeniero:
+
+```bash
+curl -X DELETE http://localhost:8080/api/inspection-cases/1/assignments/3 \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Donde `1` es el id del caso y `3` es el id del ingeniero.
+Si el caso queda sin ingenieros asignados, vuelve automaticamente a `PENDIENTE`.
+
+## Cambio de estado de casos asignados
+
+Requiere JWT de usuario interno con rol `ADMIN` o `ENGINEER`.
+
+Actualizar el estado de un caso asignado:
+
+```bash
+curl -X PATCH http://localhost:8080/api/inspection-cases/1/status \
+  -H "Authorization: Bearer <accessToken>" \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"EN_PROCESO"}'
+```
+
+Estados permitidos:
+
+- `EN_PROCESO`
+- `INSPECCIONADO`
+- `CERRADO`
+
+Reglas:
+
+- El caso debe tener al menos un ingeniero asignado.
+- `ADMIN` puede actualizar cualquier caso asignado.
+- `ENGINEER` solo puede actualizar casos donde este asignado.
+- No se permite cambiar a `PENDIENTE` ni `ASIGNADO` desde este endpoint.
