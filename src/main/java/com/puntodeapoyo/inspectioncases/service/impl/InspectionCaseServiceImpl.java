@@ -3,6 +3,7 @@ package com.puntodeapoyo.inspectioncases.service.impl;
 import java.time.Year;
 import java.util.List;
 
+import com.puntodeapoyo.common.PhoneNormalizer;
 import com.puntodeapoyo.inspectioncases.dto.CreateInspectionCaseRequest;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
@@ -38,7 +39,7 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         InspectionCase inspectionCase = inspectionCaseRepository.create(new CreateInspectionCaseCommand(
                 trackingCode,
                 normalizeRequired(request.applicantName()),
-                normalizeRequired(request.applicantPhone()),
+                PhoneNormalizer.normalize(request.applicantPhone()),
                 normalizeOptional(request.applicantEmail()),
                 normalizeRequired(request.address()),
                 normalizeOptional(request.city()),
@@ -63,15 +64,15 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
     @Override
     public InspectionCaseResponse findPublicStatus(String trackingCode, String applicantPhone) {
         String normalizedTrackingCode = normalizeRequired(trackingCode);
-        String normalizedApplicantPhone = normalizeRequired(applicantPhone);
+        String normalizedApplicantPhoneDigits = PhoneNormalizer.digitsOnly(applicantPhone);
 
         if (normalizedTrackingCode == null || normalizedTrackingCode.isBlank()
-                || normalizedApplicantPhone == null || normalizedApplicantPhone.isBlank()) {
+                || normalizedApplicantPhoneDigits == null || normalizedApplicantPhoneDigits.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe enviar codigo de caso y telefono");
         }
 
         return inspectionCaseRepository
-                .findByTrackingCodeAndApplicantPhone(normalizedTrackingCode, normalizedApplicantPhone)
+                .findByTrackingCodeAndApplicantPhoneDigits(normalizedTrackingCode, normalizedApplicantPhoneDigits)
                 .map(InspectionCaseResponse::from)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
     }
