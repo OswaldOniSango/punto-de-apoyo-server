@@ -3,9 +3,13 @@ package com.puntodeapoyo.inspectioncases.repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
 import com.puntodeapoyo.inspectioncases.model.InspectionCase;
 import com.puntodeapoyo.inspectioncases.model.InspectionCasePriority;
 import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
@@ -92,6 +96,42 @@ public class InspectionCaseRepository {
                 """;
 
         return jdbcTemplate.query(sql, this::mapRow, id).stream().findFirst();
+    }
+
+    public List<InspectionCase> search(InspectionCaseSearchCriteria criteria) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT id, tracking_code, applicant_name, applicant_phone, applicant_email, address, city,
+                       state_region, description, latitude, longitude, priority, status, created_at, updated_at
+                FROM inspection_cases
+                WHERE 1 = 1
+                """);
+        List<Object> params = new ArrayList<>();
+
+        if (criteria.trackingCode() != null && !criteria.trackingCode().isBlank()) {
+            sql.append(" AND tracking_code = ?");
+            params.add(criteria.trackingCode().trim());
+        }
+        if (criteria.status() != null) {
+            sql.append(" AND status = ?");
+            params.add(criteria.status().name());
+        }
+        if (criteria.city() != null && !criteria.city().isBlank()) {
+            sql.append(" AND LOWER(city) = LOWER(?)");
+            params.add(criteria.city().trim());
+        }
+        if (criteria.priority() != null) {
+            sql.append(" AND priority = ?");
+            params.add(criteria.priority().name());
+        }
+        if (criteria.createdDate() != null) {
+            LocalDate date = criteria.createdDate();
+            sql.append(" AND created_at >= ? AND created_at < ?");
+            params.add(Timestamp.valueOf(date.atStartOfDay()));
+            params.add(Timestamp.valueOf(date.plusDays(1).atStartOfDay()));
+        }
+
+        sql.append(" ORDER BY created_at DESC, id DESC");
+        return jdbcTemplate.query(sql.toString(), this::mapRow, params.toArray());
     }
 
     private InspectionCase mapRow(ResultSet rs, int rowNum) throws SQLException {

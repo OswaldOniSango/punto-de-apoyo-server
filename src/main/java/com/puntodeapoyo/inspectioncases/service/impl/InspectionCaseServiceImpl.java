@@ -1,26 +1,28 @@
 package com.puntodeapoyo.inspectioncases.service.impl;
 
 import java.time.Year;
+import java.util.List;
 
 import com.puntodeapoyo.inspectioncases.dto.CreateInspectionCaseRequest;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
+import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
 import com.puntodeapoyo.inspectioncases.model.InspectionCase;
 import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository.CreateInspectionCaseCommand;
-import com.puntodeapoyo.inspectioncases.service.InspectionCaseRegistrationService;
+import com.puntodeapoyo.inspectioncases.service.InspectionCaseService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class InspectionCaseRegistrationServiceImpl implements InspectionCaseRegistrationService {
+public class InspectionCaseServiceImpl implements InspectionCaseService {
 
     private static final String TRACKING_PREFIX = "VZ";
     private static final int TRACKING_NUMBER_WIDTH = 8;
 
     private final InspectionCaseRepository inspectionCaseRepository;
 
-    public InspectionCaseRegistrationServiceImpl(InspectionCaseRepository inspectionCaseRepository) {
+    public InspectionCaseServiceImpl(InspectionCaseRepository inspectionCaseRepository) {
         this.inspectionCaseRepository = inspectionCaseRepository;
     }
 
@@ -47,6 +49,13 @@ public class InspectionCaseRegistrationServiceImpl implements InspectionCaseRegi
         ));
 
         return InspectionCaseResponse.from(inspectionCase);
+    }
+
+    @Override
+    public List<InspectionCaseResponse> search(InspectionCaseSearchCriteria criteria) {
+        return inspectionCaseRepository.search(criteria).stream()
+                .map(InspectionCaseResponse::from)
+                .toList();
     }
 
     private String formatTrackingCode(int year, long trackingNumber) {
