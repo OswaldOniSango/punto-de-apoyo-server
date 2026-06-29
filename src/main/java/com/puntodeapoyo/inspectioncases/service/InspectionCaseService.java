@@ -18,5 +18,7 @@ public interface InspectionCaseService {
 
     List<PhotoEvidenceResponse> addPhotos(Long caseId, Long uploadedByUserId, List<MultipartFile> photos);
 
+    InspectionCaseResponse assignEngineers(Long caseId, Long assignedByUserId, List<Long> engineerIds);
+
     List<InspectionCaseResponse> search(InspectionCaseSearchCriteria criteria);
 }

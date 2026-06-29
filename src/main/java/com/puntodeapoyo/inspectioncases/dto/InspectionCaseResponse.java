@@ -24,16 +24,25 @@ public record InspectionCaseResponse(
         InspectionCaseStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        List<PhotoEvidenceResponse> photos
+        List<PhotoEvidenceResponse> photos,
+        List<CaseAssignmentResponse> assignments
 ) {
 
     public static InspectionCaseResponse from(InspectionCase inspectionCase) {
-        return from(inspectionCase, List.of());
+        return from(inspectionCase, List.of(), List.of());
     }
 
     public static InspectionCaseResponse from(
             InspectionCase inspectionCase,
             List<PhotoEvidenceResponse> photos
+    ) {
+        return from(inspectionCase, photos, List.of());
+    }
+
+    public static InspectionCaseResponse from(
+            InspectionCase inspectionCase,
+            List<PhotoEvidenceResponse> photos,
+            List<CaseAssignmentResponse> assignments
     ) {
         return new InspectionCaseResponse(
                 inspectionCase.id(),
@@ -51,7 +60,8 @@ public record InspectionCaseResponse(
                 inspectionCase.status(),
                 inspectionCase.createdAt(),
                 inspectionCase.updatedAt(),
-                photos
+                photos,
+                assignments
         );
     }
 }

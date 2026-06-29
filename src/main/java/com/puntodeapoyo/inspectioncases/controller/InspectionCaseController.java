@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.puntodeapoyo.inspectioncases.dto.AssignEngineersRequest;
 import com.puntodeapoyo.inspectioncases.dto.CreateInspectionCaseRequest;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
@@ -96,6 +97,16 @@ public class InspectionCaseController {
             @AuthenticationPrincipal Jwt jwt
     ) {
         return inspectionCaseService.addPhotos(id, jwt.getClaim("user_id"), mergePhotos(photos, photo));
+    }
+
+    @PostMapping("/api/inspection-cases/{id}/assignments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR')")
+    public InspectionCaseResponse assignEngineers(
+            @PathVariable Long id,
+            @Valid @RequestBody AssignEngineersRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return inspectionCaseService.assignEngineers(id, jwt.getClaim("user_id"), request.engineerIds());
     }
 
     @GetMapping("/api/inspection-cases")

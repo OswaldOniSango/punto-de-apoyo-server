@@ -55,6 +55,18 @@ public class InternalUserRepository {
         return jdbcTemplate.query(sql, this::mapRow);
     }
 
+    public List<InternalUser> findByRoleAndStatus(UserRole role, UserStatus status) {
+        String sql = """
+                SELECT id, first_name, last_name, email, phone, password_hash, role, status, created_at, updated_at
+                FROM users
+                WHERE role = ?
+                  AND status = ?
+                ORDER BY first_name ASC, last_name ASC, id ASC
+                """;
+
+        return jdbcTemplate.query(sql, this::mapRow, role.name(), status.name());
+    }
+
     public InternalUser create(CreateUserCommand command) throws DuplicateKeyException {
         String sql = """
                 INSERT INTO users (first_name, last_name, email, phone, password_hash, role, status)

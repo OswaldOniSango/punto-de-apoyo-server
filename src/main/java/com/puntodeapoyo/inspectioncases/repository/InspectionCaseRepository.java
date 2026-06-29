@@ -113,6 +113,15 @@ public class InspectionCaseRepository {
         return jdbcTemplate.query(sql, this::mapRow, trackingCode, applicantPhoneDigits).stream().findFirst();
     }
 
+    public boolean updateStatus(Long id, InspectionCaseStatus status) {
+        String sql = """
+                UPDATE inspection_cases
+                SET status = ?
+                WHERE id = ?
+                """;
+        return jdbcTemplate.update(sql, status.name(), id) > 0;
+    }
+
     public List<InspectionCase> search(InspectionCaseSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder("""
                 SELECT id, tracking_code, applicant_name, applicant_phone, applicant_email, address, city,

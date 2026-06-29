@@ -2,19 +2,23 @@ package com.puntodeapoyo.inspectioncases.service.impl;
 
 import java.time.Year;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.puntodeapoyo.common.PhoneNormalizer;
+import com.puntodeapoyo.inspectioncases.dto.CaseAssignmentResponse;
 import com.puntodeapoyo.inspectioncases.dto.CreateInspectionCaseRequest;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseResponse;
 import com.puntodeapoyo.inspectioncases.dto.InspectionCaseSearchCriteria;
 import com.puntodeapoyo.inspectioncases.dto.PhotoEvidenceResponse;
+import com.puntodeapoyo.inspectioncases.model.CaseAssignment;
 import com.puntodeapoyo.inspectioncases.model.InspectionCase;
 import com.puntodeapoyo.inspectioncases.model.PhotoEvidence;
 import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
+import com.puntodeapoyo.inspectioncases.repository.CaseAssignmentRepository;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository.CreateInspectionCaseCommand;
 import com.puntodeapoyo.inspectioncases.repository.PhotoEvidenceRepository;
@@ -22,6 +26,10 @@ import com.puntodeapoyo.inspectioncases.repository.PhotoEvidenceRepository.Creat
 import com.puntodeapoyo.inspectioncases.service.InspectionCaseService;
 import com.puntodeapoyo.inspectioncases.storage.PhotoStorageService;
 import com.puntodeapoyo.inspectioncases.storage.StoredPhoto;
+import com.puntodeapoyo.users.model.InternalUser;
+import com.puntodeapoyo.users.model.UserRole;
+import com.puntodeapoyo.users.model.UserStatus;
+import com.puntodeapoyo.users.repository.InternalUserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,15 +46,21 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
 
     private final InspectionCaseRepository inspectionCaseRepository;
     private final PhotoEvidenceRepository photoEvidenceRepository;
+    private final CaseAssignmentRepository caseAssignmentRepository;
+    private final InternalUserRepository internalUserRepository;
     private final PhotoStorageService photoStorageService;
 
     public InspectionCaseServiceImpl(
             InspectionCaseRepository inspectionCaseRepository,
             PhotoEvidenceRepository photoEvidenceRepository,
+            CaseAssignmentRepository caseAssignmentRepository,
+            InternalUserRepository internalUserRepository,
             PhotoStorageService photoStorageService
     ) {
         this.inspectionCaseRepository = inspectionCaseRepository;
         this.photoEvidenceRepository = photoEvidenceRepository;
+        this.caseAssignmentRepository = caseAssignmentRepository;
+        this.internalUserRepository = internalUserRepository;
         this.photoStorageService = photoStorageService;
     }
 
@@ -96,11 +110,13 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
     public List<InspectionCaseResponse> search(InspectionCaseSearchCriteria criteria) {
         List<InspectionCase> cases = inspectionCaseRepository.search(criteria);
         Map<Long, List<PhotoEvidenceResponse>> photosByCaseId = photosByCaseId(cases);
+        Map<Long, List<CaseAssignmentResponse>> assignmentsByCaseId = assignmentsByCaseId(cases);
 
         return cases.stream()
                 .map(inspectionCase -> InspectionCaseResponse.from(
                         inspectionCase,
-                        photosByCaseId.getOrDefault(inspectionCase.id(), List.of())
+                        photosByCaseId.getOrDefault(inspectionCase.id(), List.of()),
+                        assignmentsByCaseId.getOrDefault(inspectionCase.id(), List.of())
                 ))
                 .toList();
     }
@@ -147,6 +163,24 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         );
     }
 
+    @Override
+    @Transactional
+    public InspectionCaseResponse assignEngineers(Long caseId, Long assignedByUserId, List<Long> engineerIds) {
+        inspectionCaseRepository.findById(caseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
+
+        List<Long> normalizedEngineerIds = normalizeEngineerIds(engineerIds);
+        if (normalizedEngineerIds.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe enviar al menos un ingeniero");
+        }
+
+        validateEngineers(normalizedEngineerIds);
+        caseAssignmentRepository.createMany(caseId, normalizedEngineerIds, assignedByUserId);
+        inspectionCaseRepository.updateStatus(caseId, InspectionCaseStatus.ASIGNADO);
+
+        return findInternalCase(caseId);
+    }
+
     private List<PhotoEvidenceResponse> storePhotos(
             Long caseId,
             String trackingCode,
@@ -180,6 +214,66 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
                     .add(PhotoEvidenceResponse.from(photoEvidence));
         }
         return result;
+    }
+
+    private Map<Long, List<CaseAssignmentResponse>> assignmentsByCaseId(List<InspectionCase> cases) {
+        List<Long> caseIds = cases.stream().map(InspectionCase::id).toList();
+        Map<Long, List<CaseAssignmentResponse>> result = new LinkedHashMap<>();
+
+        for (CaseAssignment assignment : caseAssignmentRepository.findByCaseIds(caseIds)) {
+            result.computeIfAbsent(assignment.caseId(), ignored -> new ArrayList<>())
+                    .add(CaseAssignmentResponse.from(assignment));
+        }
+        return result;
+    }
+
+    private InspectionCaseResponse findInternalCase(Long caseId) {
+        InspectionCase inspectionCase = inspectionCaseRepository.findById(caseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
+        List<PhotoEvidenceResponse> photos = photoEvidenceRepository.findByCaseId(caseId).stream()
+                .map(PhotoEvidenceResponse::from)
+                .toList();
+        List<CaseAssignmentResponse> assignments = caseAssignmentRepository.findByCaseId(caseId).stream()
+                .map(CaseAssignmentResponse::from)
+                .toList();
+        return InspectionCaseResponse.from(inspectionCase, photos, assignments);
+    }
+
+    private List<Long> normalizeEngineerIds(List<Long> engineerIds) {
+        if (engineerIds == null) {
+            return List.of();
+        }
+
+        Set<Long> seen = new HashSet<>();
+        List<Long> normalized = new ArrayList<>();
+        for (Long engineerId : engineerIds) {
+            if (engineerId != null && seen.add(engineerId)) {
+                normalized.add(engineerId);
+            }
+        }
+        return normalized;
+    }
+
+    private void validateEngineers(List<Long> engineerIds) {
+        for (Long engineerId : engineerIds) {
+            InternalUser engineer = internalUserRepository.findById(engineerId)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Ingeniero no encontrado: " + engineerId
+                    ));
+            if (engineer.role() != UserRole.ENGINEER) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El usuario " + engineerId + " no tiene rol ENGINEER"
+                );
+            }
+            if (engineer.status() != UserStatus.ACTIVE) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "El ingeniero " + engineerId + " no esta activo"
+                );
+            }
+        }
     }
 
     private List<MultipartFile> normalizePhotos(List<MultipartFile> photos) {
