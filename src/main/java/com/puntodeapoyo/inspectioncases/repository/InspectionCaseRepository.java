@@ -98,6 +98,18 @@ public class InspectionCaseRepository {
         return jdbcTemplate.query(sql, this::mapRow, id).stream().findFirst();
     }
 
+    public Optional<InspectionCase> findByTrackingCodeAndApplicantPhone(String trackingCode, String applicantPhone) {
+        String sql = """
+                SELECT id, tracking_code, applicant_name, applicant_phone, applicant_email, address, city,
+                       state_region, description, latitude, longitude, priority, status, created_at, updated_at
+                FROM inspection_cases
+                WHERE tracking_code = ?
+                  AND applicant_phone = ?
+                """;
+
+        return jdbcTemplate.query(sql, this::mapRow, trackingCode, applicantPhone).stream().findFirst();
+    }
+
     public List<InspectionCase> search(InspectionCaseSearchCriteria criteria) {
         StringBuilder sql = new StringBuilder("""
                 SELECT id, tracking_code, applicant_name, applicant_phone, applicant_email, address, city,

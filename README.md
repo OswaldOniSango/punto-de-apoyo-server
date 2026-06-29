@@ -165,6 +165,12 @@ Respuesta esperada:
 }
 ```
 
+Consultar estado publicamente con codigo de caso y telefono:
+
+```bash
+curl "http://localhost:8080/api/public/inspection-cases/status?trackingCode=VZ-2026-00000001&phone=%2B58%20412%20555-1212"
+```
+
 ## Consulta de casos de inspeccion
 
 Requiere JWT de usuario interno (`ADMIN`, `COORDINATOR` o `ENGINEER`).

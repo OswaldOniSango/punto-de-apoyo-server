@@ -35,6 +35,14 @@ public class InspectionCaseController {
         return inspectionCaseService.register(request);
     }
 
+    @GetMapping("/api/public/inspection-cases/status")
+    public InspectionCaseResponse findPublicStatus(
+            @RequestParam String trackingCode,
+            @RequestParam String phone
+    ) {
+        return inspectionCaseService.findPublicStatus(trackingCode, phone);
+    }
+
     @GetMapping("/api/inspection-cases")
     @PreAuthorize("hasAnyRole('ADMIN', 'COORDINATOR', 'ENGINEER')")
     public List<InspectionCaseResponse> search(

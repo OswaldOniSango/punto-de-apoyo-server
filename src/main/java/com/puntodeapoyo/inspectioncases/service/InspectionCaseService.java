@@ -10,5 +10,7 @@ public interface InspectionCaseService {
 
     InspectionCaseResponse register(CreateInspectionCaseRequest request);
 
+    InspectionCaseResponse findPublicStatus(String trackingCode, String applicantPhone);
+
     List<InspectionCaseResponse> search(InspectionCaseSearchCriteria criteria);
 }

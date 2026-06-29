@@ -11,8 +11,10 @@ import com.puntodeapoyo.inspectioncases.model.InspectionCaseStatus;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository;
 import com.puntodeapoyo.inspectioncases.repository.InspectionCaseRepository.CreateInspectionCaseCommand;
 import com.puntodeapoyo.inspectioncases.service.InspectionCaseService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class InspectionCaseServiceImpl implements InspectionCaseService {
@@ -56,6 +58,22 @@ public class InspectionCaseServiceImpl implements InspectionCaseService {
         return inspectionCaseRepository.search(criteria).stream()
                 .map(InspectionCaseResponse::from)
                 .toList();
+    }
+
+    @Override
+    public InspectionCaseResponse findPublicStatus(String trackingCode, String applicantPhone) {
+        String normalizedTrackingCode = normalizeRequired(trackingCode);
+        String normalizedApplicantPhone = normalizeRequired(applicantPhone);
+
+        if (normalizedTrackingCode == null || normalizedTrackingCode.isBlank()
+                || normalizedApplicantPhone == null || normalizedApplicantPhone.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debe enviar codigo de caso y telefono");
+        }
+
+        return inspectionCaseRepository
+                .findByTrackingCodeAndApplicantPhone(normalizedTrackingCode, normalizedApplicantPhone)
+                .map(InspectionCaseResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caso no encontrado"));
     }
 
     private String formatTrackingCode(int year, long trackingNumber) {
