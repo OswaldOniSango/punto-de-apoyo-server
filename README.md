@@ -72,3 +72,65 @@ Usar el `accessToken` devuelto para acceder a endpoints protegidos:
 curl http://localhost:8080/api/users/me \
   -H "Authorization: Bearer <accessToken>"
 ```
+
+## Administracion de usuarios internos
+
+Solo usuarios con rol `ADMIN` pueden usar estos endpoints.
+
+Listar usuarios:
+
+```bash
+curl http://localhost:8080/api/users \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+Crear usuario:
+
+```bash
+curl -X POST http://localhost:8080/api/users \
+  -H "Authorization: Bearer <accessToken>" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "firstName": "Ada",
+    "lastName": "Lovelace",
+    "email": "ada@example.com",
+    "phone": "+54 11 5555-5555",
+    "password": "<password>",
+    "role": "ENGINEER",
+    "status": "ACTIVE"
+  }'
+```
+
+Actualizar usuario por id:
+
+```bash
+curl -X PATCH http://localhost:8080/api/users/1 \
+  -H "Authorization: Bearer <accessToken>" \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"INACTIVE"}'
+```
+
+El body es parcial: solo se actualizan los campos enviados.
+
+```bash
+curl -X PATCH http://localhost:8080/api/users/1 \
+  -H "Authorization: Bearer <accessToken>" \
+  -H 'Content-Type: application/json' \
+  -d '{"role":"COORDINATOR","status":"ACTIVE"}'
+```
+
+Los errores de validacion devuelven `400` con detalle por campo:
+
+```json
+{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "La solicitud contiene campos invalidos",
+  "fieldErrors": [
+    {
+      "field": "password",
+      "message": "La password debe tener entre 8 y 100 caracteres"
+    }
+  ]
+}
+```
