@@ -168,8 +168,22 @@ Respuesta esperada:
 Consultar estado publicamente con codigo de caso y telefono:
 
 ```bash
-curl "http://localhost:8080/api/public/inspection-cases/status?trackingCode=VZ-2026-00000001&phone=%2B58%20412%20555-1212"
+curl "http://localhost:8080/api/public/inspection-cases/status?trackingCode=VZ-2026-00000001&phone=584125551212"
 ```
+
+Los telefonos se normalizan antes de guardarse y buscarse. Por ejemplo:
+
+- `+58 412 555-1212`
+- `+58-412-555-1212`
+- `+58(412)5551212`
+
+se guardan como:
+
+```text
++584125551212
+```
+
+La consulta publica compara por digitos, asi que puede recibir `584125551212` o `%2B584125551212`.
 
 ## Consulta de casos de inspeccion
 

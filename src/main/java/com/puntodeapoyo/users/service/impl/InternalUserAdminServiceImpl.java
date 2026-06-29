@@ -2,6 +2,7 @@ package com.puntodeapoyo.users.service.impl;
 
 import java.util.List;
 
+import com.puntodeapoyo.common.PhoneNormalizer;
 import com.puntodeapoyo.users.dto.CreateInternalUserRequest;
 import com.puntodeapoyo.users.dto.InternalUserResponse;
 import com.puntodeapoyo.users.dto.UpdateInternalUserRequest;
@@ -46,7 +47,7 @@ public class InternalUserAdminServiceImpl implements InternalUserAdminService {
                     normalizeRequired(request.firstName()),
                     normalizeRequired(request.lastName()),
                     email,
-                    normalizeOptional(request.phone()),
+                    PhoneNormalizer.normalize(request.phone()),
                     passwordEncoder.encode(request.password()),
                     request.role(),
                     request.status()
