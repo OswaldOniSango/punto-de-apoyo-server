@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Punto de Apoyo</title>
+  <meta name="description" content="Punto de Apoyo esta preparando su plataforma de apoyo ciudadano e inspeccion de viviendas afectadas.">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15201b;
+      --muted: #58645e;
+      --surface: #f7f8f5;
+      --line: #d7ddd4;
+      --accent: #0d7c66;
+      --accent-dark: #075846;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--surface);
+    }
+
+    body {
+      line-height: 1.5;
+    }
+
+    .hero {
+      min-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        linear-gradient(90deg, rgba(10, 23, 18, 0.78), rgba(10, 23, 18, 0.42)),
+        url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=80") center / cover;
+      color: var(--white);
+    }
+
+    .topbar,
+    .hero-content,
+    .section-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    .domain {
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 0.95rem;
+    }
+
+    .hero-content {
+      padding: 96px 0 88px;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      line-height: 0.92;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 700px;
+      margin: 28px 0 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 34px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.94);
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #5ee0bc;
+      box-shadow: 0 0 0 5px rgba(94, 224, 188, 0.18);
+    }
+
+    .info {
+      padding: 44px 0 54px;
+      background: var(--surface);
+    }
+
+    .section-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      gap: 48px;
+      align-items: start;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.75rem, 3vw, 2.65rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .copy {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .details {
+      display: grid;
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .details li {
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .details strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent-dark);
+    }
+
+    .details span {
+      color: var(--muted);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 22px 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        align-items: flex-start;
+        gap: 18px;
+        flex-direction: column;
+      }
+
+      .hero {
+        min-height: 78vh;
+      }
+
+      .hero-content {
+        padding: 64px 0 70px;
+      }
+
+      .status {
+        align-items: flex-start;
+      }
+
+      .section-inner {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero" aria-label="Punto de Apoyo">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true">PA</div>
+          <span>Punto de Apoyo</span>
+        </div>
+        <div class="domain">puntodeapoyo.org</div>
+      </header>
+
+      <div class="hero-content">
+        <p class="eyebrow">Plataforma en preparacion</p>
+        <h1>Punto de Apoyo</h1>
+        <p class="lead">
+          Estamos trabajando para ofrecer un canal de atencion y seguimiento para viviendas afectadas.
+          Pronto estaremos dando servicio.
+        </p>
+        <div class="status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>Estamos preparando el lanzamiento</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="info" aria-label="Informacion">
+      <div class="section-inner">
+        <div>
+          <h2>Una herramienta para registrar, revisar y acompanar casos.</h2>
+          <p class="copy">
+            Nuestro objetivo es facilitar el registro de solicitudes, la asignacion tecnica y el seguimiento
+            de inspecciones de forma clara y segura.
+          </p>
+        </div>
+
+        <ul class="details">
+          <li>
+            <strong>Registro ciudadano</strong>
+            <span>Recepcion de casos con codigo de seguimiento.</span>
+          </li>
+          <li>
+            <strong>Evaluacion tecnica</strong>
+            <span>Asignacion de responsables, observaciones y evidencias.</span>
+          </li>
+          <li>
+            <strong>Seguimiento</strong>
+            <span>Estado del caso y reporte de inspeccion.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="section-inner">
+      <span>Copyright 2026 Punto de Apoyo. Todos los derechos reservados.</span>
+    </div>
+  </footer>
+</body>
+</html>
