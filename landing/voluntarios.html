@@ -289,7 +289,7 @@
       <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
 
       <section>
-        <h2>Informacion personal</h2>
+        <h2>Seccion 1 - Informacion personal</h2>
         <div class="grid">
           <div class="field">
             <label for="nombre">Nombre completo <span class="required">*</span></label>
@@ -315,14 +315,34 @@
             <label for="zona">Zona horaria <span class="required">*</span></label>
             <input id="zona" name="zona_horaria" type="text" placeholder="Ej: Venezuela, Argentina, GMT-4" required>
           </div>
+          <div class="field">
+            <label for="disponibilidad">Disponibilidad semanal <span class="required">*</span></label>
+            <select id="disponibilidad" name="disponibilidad_semanal" required>
+              <option value="">Selecciona una opcion</option>
+              <option>Menos de 5 horas</option>
+              <option>5 a 10 horas</option>
+              <option>10 a 20 horas</option>
+              <option>Mas de 20 horas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="inicio">Desde cuando podrias comenzar a colaborar <span class="required">*</span></label>
+            <select id="inicio" name="inicio_colaboracion" required>
+              <option value="">Selecciona una opcion</option>
+              <option>Hoy mismo</option>
+              <option>Esta semana</option>
+              <option>La proxima semana</option>
+              <option>Todavia no estoy seguro</option>
+            </select>
+          </div>
         </div>
       </section>
 
       <section>
-        <h2>Perfil y disponibilidad</h2>
+        <h2>Seccion 2 - Perfil principal</h2>
         <div class="grid">
           <div class="field">
-            <label for="perfil">Perfil principal <span class="required">*</span></label>
+            <label for="perfil">Cual es tu perfil principal <span class="required">*</span></label>
             <select id="perfil" name="perfil_principal" required>
               <option value="">Selecciona una opcion</option>
               <option>Backend</option>
@@ -338,56 +358,32 @@
               <option>Otro</option>
             </select>
           </div>
-          <div class="field">
-            <label for="disponibilidad">Disponibilidad semanal <span class="required">*</span></label>
-            <select id="disponibilidad" name="disponibilidad_semanal" required>
-              <option value="">Selecciona una opcion</option>
-              <option>Menos de 5 horas</option>
-              <option>5 a 10 horas</option>
-              <option>10 a 20 horas</option>
-              <option>Mas de 20 horas</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="inicio">Desde cuando podrias comenzar <span class="required">*</span></label>
-            <select id="inicio" name="inicio_colaboracion" required>
-              <option value="">Selecciona una opcion</option>
-              <option>Hoy mismo</option>
-              <option>Esta semana</option>
-              <option>La proxima semana</option>
-              <option>Todavia no estoy seguro</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="reuniones">Puedes asistir a reuniones breves <span class="required">*</span></label>
-            <select id="reuniones" name="reuniones" required>
-              <option value="">Selecciona una opcion</option>
-              <option>Si</option>
-              <option>No</option>
-              <option>Solo algunas veces</option>
-            </select>
-          </div>
           <div class="field full">
-            <div class="label">Areas donde puedes apoyar</div>
+            <div class="label">Tienes un perfil secundario donde tambien puedas apoyar <span class="required">*</span></div>
             <div class="options">
-              <label class="option"><input type="checkbox" name="areas[]" value="Backend">Backend</label>
-              <label class="option"><input type="checkbox" name="areas[]" value="Frontend">Frontend</label>
-              <label class="option"><input type="checkbox" name="areas[]" value="QA">QA</label>
-              <label class="option"><input type="checkbox" name="areas[]" value="DevOps">DevOps</label>
-              <label class="option"><input type="checkbox" name="areas[]" value="UX/UI">UX/UI</label>
-              <label class="option"><input type="checkbox" name="areas[]" value="Producto">Producto</label>
-              <label class="option"><input type="checkbox" name="areas[]" value="Mapas / Datos">Mapas / Datos</label>
-              <label class="option"><input type="checkbox" name="areas[]" value="Documentacion">Documentacion</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Backend" data-required-group="perfil_secundario">Backend</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Frontend" data-required-group="perfil_secundario">Frontend</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Full Stack" data-required-group="perfil_secundario">Full Stack</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="QA" data-required-group="perfil_secundario">QA</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="DevOps" data-required-group="perfil_secundario">DevOps</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="UX/UI" data-required-group="perfil_secundario">UX/UI</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Product Owner / Product Manager" data-required-group="perfil_secundario">Product Owner / Product Manager</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Data / GIS / Mapas" data-required-group="perfil_secundario">Data / GIS / Mapas</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Seguridad" data-required-group="perfil_secundario">Seguridad</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Documentacion" data-required-group="perfil_secundario">Documentacion</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Soporte tecnico" data-required-group="perfil_secundario">Soporte tecnico</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="No aplica" data-required-group="perfil_secundario">No aplica</label>
+              <label class="option"><input type="checkbox" name="perfil_secundario[]" value="Otro" data-required-group="perfil_secundario">Otro</label>
             </div>
           </div>
         </div>
       </section>
 
       <section>
-        <h2>Experiencia</h2>
+        <h2>Seccion 3 - Experiencia profesional</h2>
         <div class="grid">
           <div class="field">
-            <label for="experiencia">Anos de experiencia <span class="required">*</span></label>
+            <label for="experiencia">Cuantos anos de experiencia profesional tienes <span class="required">*</span></label>
             <select id="experiencia" name="experiencia_profesional" required>
               <option value="">Selecciona una opcion</option>
               <option>Sin experiencia laboral</option>
@@ -398,22 +394,170 @@
             </select>
           </div>
           <div class="field">
-            <label for="produccion">Has trabajado en proyectos en produccion <span class="required">*</span></label>
+            <label for="produccion">Has trabajado anteriormente en proyectos en produccion <span class="required">*</span></label>
             <select id="produccion" name="experiencia_produccion" required>
               <option value="">Selecciona una opcion</option>
               <option>Si</option>
               <option>No</option>
             </select>
           </div>
+          <div class="field">
+            <label for="open_source">Has trabajado en proyectos Open Source o colaborativos <span class="required">*</span></label>
+            <select id="open_source" name="experiencia_open_source" required>
+              <option value="">Selecciona una opcion</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="remota">Has trabajado con equipos remotos o voluntarios <span class="required">*</span></label>
+            <select id="remota" name="experiencia_remota" required>
+              <option value="">Selecciona una opcion</option>
+              <option>Si</option>
+              <option>No</option>
+            </select>
+          </div>
           <div class="field full">
-            <label for="experiencia_relevante">Experiencia mas relevante <span class="required">*</span></label>
+            <label for="experiencia_relevante">Describe brevemente tu experiencia mas relevante <span class="required">*</span></label>
             <textarea id="experiencia_relevante" name="experiencia_relevante" required></textarea>
           </div>
         </div>
       </section>
 
       <section>
-        <h2>Enlaces</h2>
+        <h2>Seccion 4 - Tecnologias conocidas</h2>
+        <div class="field full">
+          <div class="label">Backend</div>
+          <div class="options">
+            <label class="option"><input type="checkbox" name="backend[]" value="Java">Java</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="Spring Boot">Spring Boot</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="Node.js">Node.js</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="Python">Python</label>
+            <label class="option"><input type="checkbox" name="backend[]" value=".NET">.NET</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="Go">Go</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="PHP">PHP</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="REST APIs">REST APIs</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="PostgreSQL">PostgreSQL</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="MySQL">MySQL</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="MongoDB">MongoDB</label>
+            <label class="option"><input type="checkbox" name="backend[]" value="Otro">Otro</label>
+          </div>
+        </div>
+
+        <div class="field full">
+          <div class="label">Frontend</div>
+          <div class="options">
+            <label class="option"><input type="checkbox" name="frontend[]" value="React">React</label>
+            <label class="option"><input type="checkbox" name="frontend[]" value="Angular">Angular</label>
+            <label class="option"><input type="checkbox" name="frontend[]" value="Vue">Vue</label>
+            <label class="option"><input type="checkbox" name="frontend[]" value="Next.js">Next.js</label>
+            <label class="option"><input type="checkbox" name="frontend[]" value="HTML/CSS">HTML/CSS</label>
+            <label class="option"><input type="checkbox" name="frontend[]" value="Tailwind CSS">Tailwind CSS</label>
+            <label class="option"><input type="checkbox" name="frontend[]" value="Flutter">Flutter</label>
+            <label class="option"><input type="checkbox" name="frontend[]" value="Otro">Otro</label>
+          </div>
+        </div>
+
+        <div class="field full">
+          <div class="label">QA</div>
+          <div class="options">
+            <label class="option"><input type="checkbox" name="qa[]" value="Testing manual">Testing manual</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Automatizacion">Automatizacion</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Postman">Postman</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Cypress">Cypress</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Playwright">Playwright</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Selenium">Selenium</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Pruebas de API">Pruebas de API</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Pruebas funcionales">Pruebas funcionales</label>
+            <label class="option"><input type="checkbox" name="qa[]" value="Otro">Otro</label>
+          </div>
+        </div>
+
+        <div class="field full">
+          <div class="label">DevOps / Infraestructura</div>
+          <div class="options">
+            <label class="option"><input type="checkbox" name="devops[]" value="Docker">Docker</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="Kubernetes">Kubernetes</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="GitHub Actions">GitHub Actions</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="Jenkins">Jenkins</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="Linux">Linux</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="Nginx">Nginx</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="CI/CD">CI/CD</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="AWS">AWS</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="Google Cloud">Google Cloud</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="Azure">Azure</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="VPS">VPS</label>
+            <label class="option"><input type="checkbox" name="devops[]" value="Otro">Otro</label>
+          </div>
+        </div>
+
+        <div class="field full">
+          <div class="label">Mapas / Geolocalizacion / Datos</div>
+          <div class="options">
+            <label class="option"><input type="checkbox" name="mapas[]" value="Leaflet">Leaflet</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="Mapbox">Mapbox</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="Google Maps API">Google Maps API</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="OpenStreetMap">OpenStreetMap</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="QGIS">QGIS</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="GeoJSON">GeoJSON</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="PostGIS">PostGIS</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="Analisis de datos">Analisis de datos</label>
+            <label class="option"><input type="checkbox" name="mapas[]" value="Otro">Otro</label>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Seccion 5 - Nivel de participacion</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="participacion">Como te gustaria participar inicialmente <span class="required">*</span></label>
+            <select id="participacion" name="participacion_inicial" required>
+              <option value="">Selecciona una opcion</option>
+              <option>Desarrollo directo</option>
+              <option>Revision tecnica</option>
+              <option>QA / pruebas</option>
+              <option>Diseno UX/UI</option>
+              <option>Organizacion de tareas</option>
+              <option>Liderazgo de equipo</option>
+              <option>Documentacion</option>
+              <option>Asesoria puntual</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="tarea">Estarias dispuesto a asumir una tarea concreta con fecha de entrega <span class="required">*</span></label>
+            <select id="tarea" name="asume_tarea" required>
+              <option value="">Selecciona una opcion</option>
+              <option>Si</option>
+              <option>No</option>
+              <option>Depende de la tarea</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reuniones">Podrias participar en reuniones breves de coordinacion <span class="required">*</span></label>
+            <select id="reuniones" name="reuniones" required>
+              <option value="">Selecciona una opcion</option>
+              <option>Si</option>
+              <option>No</option>
+              <option>Solo algunas veces</option>
+            </select>
+          </div>
+          <div class="field full">
+            <div class="label">En que horario sueles estar disponible <span class="required">*</span></div>
+            <div class="options">
+              <label class="option"><input type="checkbox" name="horario[]" value="Manana" data-required-group="horario">Manana</label>
+              <label class="option"><input type="checkbox" name="horario[]" value="Tarde" data-required-group="horario">Tarde</label>
+              <label class="option"><input type="checkbox" name="horario[]" value="Noche" data-required-group="horario">Noche</label>
+              <label class="option"><input type="checkbox" name="horario[]" value="Fines de semana" data-required-group="horario">Fines de semana</label>
+              <label class="option"><input type="checkbox" name="horario[]" value="Depende del dia" data-required-group="horario">Depende del dia</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Seccion 6 - Enlaces opcionales</h2>
         <div class="grid">
           <div class="field">
             <label for="github">GitHub</label>
@@ -430,22 +574,23 @@
           <div class="field">
             <label for="cv">CV o resumen profesional</label>
             <input id="cv" name="cv" type="url">
-            <span class="hint">Puede ser Google Drive, Notion, LinkedIn, portafolio o pagina personal.</span>
+            <span class="hint">Puedes colocar un enlace a tu CV, LinkedIn, portafolio, Notion, Google Drive o pagina personal.</span>
           </div>
         </div>
       </section>
 
       <section>
-        <h2>Mensaje final</h2>
+        <h2>Seccion 7 - Pregunta final</h2>
         <div class="field">
-          <label for="comentarios">Algo mas que debamos saber</label>
+          <label for="comentarios">Hay algo mas que debamos saber sobre tu perfil o disponibilidad</label>
           <textarea id="comentarios" name="comentarios"></textarea>
         </div>
       </section>
 
       <div class="submit-area">
+        <h2>Seccion 8 - Consentimiento</h2>
         <label class="consent">
-          <input type="checkbox" name="consentimiento" value="Si, autorizo" required>
+          <input type="checkbox" name="consentimiento" value="Si, autorizo." required>
           <span>Autorizo a Punto de Apoyo a contactarme para organizar mi participacion como voluntario tecnico. <span class="required">*</span></span>
         </label>
         <button type="submit">Enviar postulacion</button>
@@ -453,5 +598,20 @@
       </div>
     </form>
   </main>
+  <script>
+    document.querySelector("form").addEventListener("submit", function (event) {
+      var requiredGroups = ["perfil_secundario", "horario"];
+      for (var index = 0; index < requiredGroups.length; index += 1) {
+        var group = requiredGroups[index];
+        var checked = document.querySelectorAll('[data-required-group="' + group + '"]:checked').length > 0;
+        if (!checked) {
+          event.preventDefault();
+          alert("Completa las secciones obligatorias de casillas de verificacion.");
+          document.querySelector('[data-required-group="' + group + '"]').focus();
+          return;
+        }
+      }
+    });
+  </script>
 </body>
 </html>
