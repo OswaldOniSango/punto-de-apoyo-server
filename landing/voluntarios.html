@@ -242,6 +242,33 @@
       text-align: center;
     }
 
+    .form-message {
+      display: none;
+      margin: 0 0 18px;
+      padding: 13px 14px;
+      border-radius: 8px;
+      font-weight: 750;
+    }
+
+    .form-message.success {
+      display: block;
+      border: 1px solid rgba(13, 124, 102, 0.28);
+      background: rgba(13, 124, 102, 0.08);
+      color: var(--accent-dark);
+    }
+
+    .form-message.error {
+      display: block;
+      border: 1px solid rgba(180, 35, 24, 0.26);
+      background: rgba(180, 35, 24, 0.08);
+      color: var(--danger);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.72;
+    }
+
     @media (max-width: 760px) {
       header {
         padding-bottom: 56px;
@@ -285,8 +312,7 @@
   </header>
 
   <main class="wrap">
-    <form action="https://formspree.io/f/xjgqonky" method="POST">
-      <input type="hidden" name="_subject" value="Nueva postulacion voluntaria - Punto de Apoyo">
+    <form id="volunteer-form">
       <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
 
       <section>
@@ -590,6 +616,7 @@
 
       <div class="submit-area">
         <h2>Seccion 8 - Consentimiento</h2>
+        <div id="form-message" class="form-message" role="status" aria-live="polite"></div>
         <label class="consent">
           <input type="checkbox" name="consentimiento" value="Si, autorizo." required>
           <span>Autorizo a Punto de Apoyo a contactarme para organizar mi participacion como voluntario tecnico. <span class="required">*</span></span>
@@ -600,17 +627,132 @@
     </form>
   </main>
   <script>
-    document.querySelector("form").addEventListener("submit", function (event) {
+    var SUPABASE_URL = "https://fpqaujekxjpuohxevhhf.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_0PY8Iyrnzm81PT_tgxR8dA_XA1C-tk2";
+
+    var form = document.querySelector("#volunteer-form");
+    var formMessage = document.querySelector("#form-message");
+    var submitButton = form.querySelector('button[type="submit"]');
+
+    function checkboxValues(formData, name) {
+      return formData.getAll(name).filter(function (currentValue) {
+        return currentValue !== null && String(currentValue).trim() !== "";
+      });
+    }
+
+    function value(formData, name) {
+      var currentValue = formData.get(name);
+      return currentValue === null ? "" : String(currentValue).trim();
+    }
+
+    function setMessage(type, text) {
+      formMessage.className = "form-message " + type;
+      formMessage.textContent = text;
+    }
+
+    function validateRequiredCheckboxGroups() {
       var requiredGroups = ["perfil_secundario", "horario"];
       for (var index = 0; index < requiredGroups.length; index += 1) {
         var group = requiredGroups[index];
         var checked = document.querySelectorAll('[data-required-group="' + group + '"]:checked').length > 0;
         if (!checked) {
-          event.preventDefault();
-          alert("Completa las secciones obligatorias de casillas de verificacion.");
+          setMessage("error", "Completa las secciones obligatorias de casillas de verificacion.");
           document.querySelector('[data-required-group="' + group + '"]').focus();
-          return;
+          return false;
         }
+      }
+      return true;
+    }
+
+    function buildPayload(formData) {
+      return {
+        full_name: value(formData, "nombre_completo"),
+        country: value(formData, "pais"),
+        city: value(formData, "ciudad"),
+        email: value(formData, "correo"),
+        contact: value(formData, "contacto"),
+        timezone: value(formData, "zona_horaria"),
+        weekly_availability: value(formData, "disponibilidad_semanal"),
+        start_availability: value(formData, "inicio_colaboracion"),
+        primary_profile: value(formData, "perfil_principal"),
+        secondary_profiles: checkboxValues(formData, "perfil_secundario[]"),
+        professional_experience: value(formData, "experiencia_profesional"),
+        production_experience: value(formData, "experiencia_produccion"),
+        open_source_experience: value(formData, "experiencia_open_source"),
+        remote_experience: value(formData, "experiencia_remota"),
+        relevant_experience: value(formData, "experiencia_relevante"),
+        backend_skills: checkboxValues(formData, "backend[]"),
+        frontend_skills: checkboxValues(formData, "frontend[]"),
+        qa_skills: checkboxValues(formData, "qa[]"),
+        devops_skills: checkboxValues(formData, "devops[]"),
+        maps_data_skills: checkboxValues(formData, "mapas[]"),
+        initial_participation: value(formData, "participacion_inicial"),
+        accepts_task: value(formData, "asume_tarea"),
+        meetings_availability: value(formData, "reuniones"),
+        available_schedule: checkboxValues(formData, "horario[]"),
+        github_url: value(formData, "github") || null,
+        linkedin_url: value(formData, "linkedin") || null,
+        portfolio_url: value(formData, "portafolio") || null,
+        cv_url: value(formData, "cv") || null,
+        comments: value(formData, "comentarios") || null,
+        consent: formData.has("consentimiento"),
+        source: "landing",
+        user_agent: navigator.userAgent
+      };
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      formMessage.className = "form-message";
+      formMessage.textContent = "";
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      if (!validateRequiredCheckboxGroups()) {
+        return;
+      }
+
+      var formData = new FormData(form);
+      if (value(formData, "_gotcha")) {
+        setMessage("success", "Gracias. Hemos recibido tu postulacion.");
+        form.reset();
+        return;
+      }
+
+      if (SUPABASE_URL.indexOf("REEMPLAZAR_") !== -1 || SUPABASE_ANON_KEY.indexOf("REEMPLAZAR_") !== -1) {
+        setMessage("error", "El formulario aun no tiene configurado Supabase.");
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Enviando...";
+
+      try {
+        var response = await fetch(SUPABASE_URL + "/rest/v1/volunteer_applications", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(buildPayload(formData))
+        });
+
+        if (!response.ok) {
+          throw new Error("Supabase respondio con status " + response.status);
+        }
+
+        form.reset();
+        setMessage("success", "Gracias. Hemos recibido tu postulacion y te contactaremos tan pronto como podamos.");
+      } catch (error) {
+        setMessage("error", "No pudimos enviar la postulacion. Intenta nuevamente en unos minutos.");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Enviar postulacion";
       }
     });
   </script>
